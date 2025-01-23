@@ -1,9 +1,9 @@
 """
-    Wranglers for transforming various data sources to the OpenIMPACT data format.
+    Wranglers for transforming various data sources to the farmnet data format.
 
     Configuration file
     --------------------------
-    Configuration file to map data source files to OpenIMPACT data format.
+    Configuration file to map data source files to farmnet data format.
 
 """
 
@@ -26,14 +26,14 @@
 
 from pathlib import Path
 import pandas as pd
-from openimpact.utils import read_config
+from farmnet.utils import read_config
 
 
-def to_openimpact(df: pd.DataFrame, *, column_mapping: dict) -> pd.DataFrame:
+def to_farmnet(df: pd.DataFrame, *, column_mapping: dict) -> pd.DataFrame:
     """Transform dataframe containing raw data to an
-    OpenIMPACT dataframe.
+    farmnet dataframe.
 
-        To be used with the OpenIMPACT data pipeline.
+        To be used with the farmnet data pipeline.
 
         Parameters
         ----------
@@ -42,9 +42,9 @@ def to_openimpact(df: pd.DataFrame, *, column_mapping: dict) -> pd.DataFrame:
 
         Returns
         -------
-        OpenIMPACT dataframe
-            The OpenIMPACT dataframe is defined in the OpenIMPACT data manifest and
-            is used as a data interface for the OpenIMPACT data pipeline
+        farmnet dataframe
+            The farmnet dataframe is defined in the farmnet data manifest and
+            is used as a data interface for the farmnet data pipeline
 
         Example
         --------

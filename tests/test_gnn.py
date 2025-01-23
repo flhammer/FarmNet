@@ -1,12 +1,12 @@
 import pytest
-from openimpact.model.train import train_gnn
+from farmnet.model.train import train_gnn
 from pickle import load
 
 import lightning as L  # type: ignore
 from torch_geometric.loader import DataLoader  # type: ignore
 
-from openimpact.data.datasets import train_test_split
-from openimpact.model.gnn import FarmGNN
+from farmnet.data.datasets import train_test_split
+from farmnet.model.gnn import FarmGNN
 
 
 @pytest.fixture(scope="class")

@@ -1,7 +1,7 @@
 import pytest
 
-from openimpact.data.wranglers import (
-    to_openimpact,
+from farmnet.data.wranglers import (
+    to_farmnet,
     get_column_mapping,
     set_default_cfg,
 )
@@ -10,13 +10,13 @@ from openimpact.data.wranglers import (
 class TestWrangler:
     set_default_cfg("tests/default.toml")
 
-    def test_to_openimpact(self, raw_dataframe, openimpact_dataframe):
+    def test_to_farmnet(self, raw_dataframe, farmnet_dataframe):
         column_mapping = get_column_mapping()
         with pytest.raises(TypeError):
-            df = to_openimpact(raw_dataframe, column_mapping)
+            df = to_farmnet(raw_dataframe, column_mapping)
 
-        df = to_openimpact(raw_dataframe, column_mapping=column_mapping)
+        df = to_farmnet(raw_dataframe, column_mapping=column_mapping)
 
-        assert df.shape[1] == openimpact_dataframe.shape[1]
-        assert set(df.columns).issubset(openimpact_dataframe.columns)
-        assert df.index.name == openimpact_dataframe.index.name
+        assert df.shape[1] == farmnet_dataframe.shape[1]
+        assert set(df.columns).issubset(farmnet_dataframe.columns)
+        assert df.index.name == farmnet_dataframe.index.name

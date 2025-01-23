@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from openimpact.data.wranglers import (
+from farmnet.data.wranglers import (
     get_dataset,
     set_default_cfg,
 )
-from openimpact.data.datasets.kelmarsh import KelmarshDataset
+from farmnet.data.datasets.kelmarsh import KelmarshDataset
 
-from openimpact.model.train import train_gnn
-from openimpact.utils import getenv
+from farmnet.model.train import train_gnn
+from farmnet.utils import getenv
 
 
 if __name__ == "__main__":

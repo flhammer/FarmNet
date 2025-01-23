@@ -1,3 +1,10 @@
+"""
+Plotting and post-pro functions.
+
+TODO: Needs refactor
+
+"""
+
 from pathlib import Path
 import matplotlib.pyplot as plt
 import networkx as nx

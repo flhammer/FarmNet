@@ -8,8 +8,8 @@ from lightning.pytorch.loggers import CSVLogger
 
 from torch_geometric.nn.summary import summary
 
-from openimpact.data.datasets import train_test_split
-from openimpact.model.gnn import FarmGAT
+from farmnet.data.datasets import train_test_split
+from farmnet.model.gnn import FarmGAT
 
 from lightning.pytorch.loggers import MLFlowLogger
 

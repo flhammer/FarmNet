@@ -1,11 +1,11 @@
-from openimpact.data.wranglers import (
+from farmnet.data.wranglers import (
     set_default_cfg,
     get_column_mapping,
     get_csv_fmt,
     get_index_fmt,
     get_dataset,
 )
-from openimpact.utils import read_config
+from farmnet.utils import read_config
 import pytest
 
 

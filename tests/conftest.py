@@ -2,7 +2,7 @@ import shutil
 import pytest
 import pandas as pd
 import numpy as np
-from openimpact.data.datasets import KelmarshDataset
+from farmnet.data.datasets import KelmarshDataset
 
 np.random.seed(42)
 
@@ -38,7 +38,7 @@ def raw_dataframe():
 
 
 @pytest.fixture(scope="module")
-def openimpact_dataframe(raw_dataframe):
+def farmnet_dataframe(raw_dataframe):
     rename = {
         "Wind speed": "wind_speed",
         "Power": "power",
@@ -50,8 +50,8 @@ def openimpact_dataframe(raw_dataframe):
 
 
 @pytest.fixture(scope="module")
-def clean_dataframe(openimpact_dataframe):
-    df = openimpact_dataframe.dropna(axis=0).query("power > 20.0")
+def clean_dataframe(farmnet_dataframe):
+    df = farmnet_dataframe.dropna(axis=0).query("power > 20.0")
     return df.copy(deep=True)
 
 

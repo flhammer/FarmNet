@@ -2,21 +2,21 @@ import pandas as pd
 import pytest
 
 
-from openimpact.data.preprocessing import (
+from farmnet.data.preprocessing import (
     dropna,
     filter_bin,
     filter_power,
     match_group_count,
     rename_labels,
 )
-from openimpact.data.wranglers import set_default_cfg
+from farmnet.data.wranglers import set_default_cfg
 
 
 class TestPreprocessing:
     set_default_cfg("tests/default.toml")
 
-    def test_filter(self, openimpact_dataframe, clean_dataframe):
-        df = dropna(openimpact_dataframe, axis=0)
+    def test_filter(self, farmnet_dataframe, clean_dataframe):
+        df = dropna(farmnet_dataframe, axis=0)
         assert df.isna().sum().sum() == 0
 
         df = filter_power(df, "power", 1000, thresh=0.02)

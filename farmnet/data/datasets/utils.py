@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 from torch_geometric.data import InMemoryDataset  # type: ignore
 
-from openimpact.data.datasets.kelmarsh import KelmarshDataset
+from farmnet.data.datasets.kelmarsh import KelmarshDataset
 
 # from farmgnn.configuration import settings
 

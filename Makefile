@@ -54,8 +54,4 @@ check:
 	ruff check .
 	black --check .
 
-## Run api
-api: install-api
-	python -m uvicorn openimpact.main:app --reload
-
 

@@ -7,7 +7,7 @@ from typing import Any
 import networkx as nx
 import numpy as np
 
-from openimpact.postpro import get_wind_direction
+from farmnet.postpro import get_wind_direction
 
 from .distance import (
     azimuth_matrix_from_dict,

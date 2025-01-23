@@ -2,25 +2,25 @@ from pathlib import Path
 
 import pandas as pd
 
-from openimpact.data.data_store import kelmarsh_raw_data
-from openimpact.data.wranglers import (
+from farmnet.data.data_store import kelmarsh_raw_data
+from farmnet.data.wranglers import (
     get_dataset,
     set_default_cfg,
-    to_openimpact,
+    to_farmnet,
     read_raw,
     get_column_mapping,
 )
-from openimpact.data.preprocessing import (
+from farmnet.data.preprocessing import (
     dropna,
     filter_bin,
     filter_power,
     match_group_count,
     rename_labels,
 )
-from openimpact.model.features import add_freestream_conditions
-from openimpact.data.datasets.kelmarsh import KelmarshDataset
+from farmnet.model.features import add_freestream_conditions
+from farmnet.data.datasets.kelmarsh import KelmarshDataset
 
-from openimpact.utils import getenv
+from farmnet.utils import getenv
 
 
 def data_pipeline():
@@ -51,7 +51,7 @@ def data_pipeline():
 
         column_mapping = get_column_mapping()
 
-        df = to_openimpact(df_raw, column_mapping=column_mapping)
+        df = to_farmnet(df_raw, column_mapping=column_mapping)
 
         # Date cleaning and filtering
         df = dropna(df, axis=0)
