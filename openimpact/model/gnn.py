@@ -2,9 +2,13 @@ from pathlib import Path
 import lightning as L
 import numpy as np
 from numpy._typing import NDArray
+from typing import overload, Any
+from abc import abstractmethod
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import MLP, GATv2Conv
+from torch_geometric.nn.norm import BatchNorm, LayerNorm
+from torch_geometric.utils import dropout_edge
 
 __all__ = [
     "BaseGNN",
@@ -25,7 +29,8 @@ class BaseGNN(L.LightningModule):
         super().__init__()
 
         self.lr = lr
-        self.weight_decay
+        self.weight_decay = weight_decay
+        self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
         """Training step"""
@@ -63,7 +68,8 @@ class BaseGNN(L.LightningModule):
         )
         return optimizer
 
-    def forward(self, x, edge_index, edge_attr):
+    @abstractmethod
+    def forward(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         raise NotImplementedError()
 
 
@@ -337,6 +343,7 @@ class FarmGAT(BaseGNN):
             )
 
         gat_layers = []
+        norm_layers = []
         in_dim = in_channels
         for (
             h_dim,
@@ -352,8 +359,11 @@ class FarmGAT(BaseGNN):
                 in_dim = h_dim * n_heads
             else:
                 in_dim = h_dim
+            # norm_layers.append(LayerNorm(in_dim))
+            norm_layers.append(BatchNorm(in_dim))
 
         self.gat = torch.nn.Sequential(*gat_layers)
+        self.norm = torch.nn.Sequential(*norm_layers)
 
         if concats[-1]:
             final_layer_in = heads[-1] * h_dims[-1]
@@ -371,21 +381,31 @@ class FarmGAT(BaseGNN):
 
         self.save_hyperparameters()
 
-    def forward(self, data, att_weights=False):
-        x, edge_index, edge_attr = data
+    def forward(self, batch, att_weights=False):
+        x, edge_index, edge_attr = batch
 
-        if att_weights:
-            A = []
-            for layer in self.gat:
+        A = []
+        for layer, norm in zip(self.gat, self.norm):
+            if att_weights:
                 x, edge_index, edge_attr, A_ = layer(
                     (x, edge_index, edge_attr), att_weights
                 )
                 A.append(A_)
-            x = self.mp(x)
-            return x, A
+            else:
+                x, edge_index, edge_attr = layer((x, edge_index, edge_attr))
 
-        x, edge_index, edge_attr = self.gat((x, edge_index, edge_attr))
+            # x = norm(x)
+
+            if self.training:
+                edge_index, edge_mask = dropout_edge(edge_index, p=0.2)
+
+                if edge_attr is not None:
+                    edge_attr = edge_attr[edge_mask]
+
         x = self.mp(x)
+
+        if att_weights:
+            return x, A
 
         return x
 
@@ -455,41 +475,22 @@ def load_model(checkpoint, gnn):
     return model
 
 
+def latest_version(root_dir: str | Path):
+    root_dir = Path(root_dir)
+    versions = sorted(
+        [int(path.name.split("_")[-1]) for path in root_dir.glob("version_*")]
+    )
+    version = versions[-1]
+    return version
+
+
 def get_checkpoint(root_dir: str | Path, version: int | None = None):
     root_dir = Path(root_dir)
     if version is None or version == -1:
-        versions = sorted(
-            [
-                int(path.name.split("_")[-1])
-                for path in root_dir.glob("version_*")
-            ]
-        )
-        version = versions[-1]
+        version = latest_version(root_dir)
 
     checkpoint = list(
         (root_dir / f"version_{version}/checkpoints/").glob("*.ckpt")
     )[0]
 
     return checkpoint
-
-
-if __name__ == "__main__":
-    in_channels = 3
-    out_channels = 1
-    h_dims = [256, 256, 256]
-    heads = [4, 4, 8]
-    concats = [True, True, True]
-    edge_dims = [2, None, None]
-    skip_connections = [True, True, True]
-    gat_gnn = FarmGAT(
-        in_channels,
-        out_channels,
-        h_dims,
-        heads,
-        concats,
-        edge_dims,
-        skip_connections,
-        512,
-        1,
-    )
-    print(gat_gnn)
