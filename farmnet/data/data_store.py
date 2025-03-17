@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 
-def kelmarsh_raw_data(download_path: str | Path) -> None:
+def kelmarsh_raw_data(download_path: str | Path, include: list[str]) -> None:
     download_path = Path(download_path)
 
     download_path.mkdir(exist_ok=True, parents=True)
@@ -13,18 +13,21 @@ def kelmarsh_raw_data(download_path: str | Path) -> None:
         8252025,
         download_path,
         force_download=False,
-        include=["Kelmarsh_WT_static.csv", "Kelmarsh_SCADA_2022_4457.zip"],
+        include=["Kelmarsh_WT_static.csv"] + include,
     )
 
-    raw_csv = download_path / "kelmarsh_raw.csv"
+    raw_csv = download_path / "kelmarsh_raw_test.csv"
 
     if not raw_csv.exists():
-        df = _scada_zip_to_dataframe(
-            download_path / "Kelmarsh_SCADA_2022_4457.zip",
-            filter_exp="Turbine_Data",
-            skiprows=9,
-        )
-
+        concat = []
+        for zip_file in include:
+            df_ = _scada_zip_to_dataframe(
+                download_path / zip_file,
+                filter_exp="Turbine_Data",
+                skiprows=9,
+            )
+            concat.append(df_)
+        df = pd.concat(concat)
         df.to_csv(raw_csv, index=False)
 
 

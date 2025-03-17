@@ -6,6 +6,7 @@ import torch
 from torch_geometric.data import InMemoryDataset
 from torch_geometric.utils.convert import from_networkx
 
+from torch_geometric.transforms.base_transform import BaseTransform
 from .graph_gen import (
     create_graph,
     update_states,
@@ -110,3 +111,36 @@ class KelmarshDataset(InMemoryDataset):
             data_list.append(data)
 
         torch.save(self.collate(data_list), self.processed_paths[0])
+
+
+class MinMaxTransform(BaseTransform):
+
+    def __init__(self, transformer):
+        super().__init__()
+
+        self.transformer = transformer
+
+    def forward(self, data):
+        data.x = torch.from_numpy(self.transformer.transform(data.x)).to(
+            torch.float
+        )
+        return data
+
+
+class MinMaxToMissing(BaseTransform):
+
+    def __init__(self, transformer):
+        super().__init__()
+
+        self.transformer = transformer
+
+    def forward(self, data):
+        data.x = torch.from_numpy(self.transformer.transform(data.x)).to(
+            torch.float
+        )
+        mask = torch.zeros(6, 4, dtype=torch.bool)
+        mask[4, (0, 1)] = True
+
+        data.x[mask] = 0.0
+
+        return data
