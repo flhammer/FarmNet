@@ -1,5 +1,6 @@
 from pickle import dump
 from pathlib import Path
+from typing import Any
 
 import lightning as L  # type: ignore
 from torch_geometric.data import InMemoryDataset  # type: ignore
@@ -9,7 +10,7 @@ from lightning.pytorch.loggers import CSVLogger
 from torch_geometric.nn.summary import summary
 
 from farmnet.data.datasets import train_test_split
-from farmnet.model.gnn import FarmGAT
+from farmnet.model.gnn import FarmGAT, FarmGATv2
 
 from lightning.pytorch.loggers import MLFlowLogger
 
@@ -18,9 +19,10 @@ def train_gnn(
     dataset: InMemoryDataset,
     gnn_params: dict,
     train_params: dict = {},
-    scaler_path: str | Path = Path("scaler"),
     log_dir: str | Path = Path("logs"),
     experiment: str = "GNN",
+    ckpt_path: str | Path | None = None,
+    transform: Any = None,
 ):
     """
     General training function that uses DataLoaders, the lightning Trainer class
@@ -30,22 +32,23 @@ def train_gnn(
 
     batch_size = train_params.get("batch_size", 1)
 
-    train_loader = DataLoader(train_data, batch_size=batch_size)
-    val_loader = DataLoader(val_data, batch_size=batch_size)
+    train_loader = DataLoader(train_data, batch_size=batch_size, num_workers=8)
+    val_loader = DataLoader(val_data, batch_size=batch_size, num_workers=4)
 
     dim_in = train_data[0].num_node_features
     dim_out = (
         1 if len(train_data[0].y.shape) == 1 else train_data[0].y.shape[1]
     )
 
-    model = FarmGAT(
+    model = FarmGATv2(
         dim_in,
         dim_out,
         **gnn_params,
     )
 
     # Initialise the bias of the last layer (MLP)
-    model.mp[0].lins[-1].bias.data.fill_(6.8)
+    model.mp[0].lins[-1].bias.data.fill_(6.7)
+    # model.mp[0].lins[-1].bias.data.fill_(0.65)
 
     mlf_logger = MLFlowLogger(
         experiment_name="lightning_logs",
@@ -72,5 +75,8 @@ def train_gnn(
         max_epochs=max_epochs, logger=loggers, accelerator="gpu"
     )
     trainer.fit(
-        model=model, train_dataloaders=train_loader, val_dataloaders=val_loader
+        model=model,
+        train_dataloaders=train_loader,
+        val_dataloaders=val_loader,
+        ckpt_path=ckpt_path,
     )
